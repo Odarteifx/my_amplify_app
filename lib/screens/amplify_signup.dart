@@ -1,3 +1,4 @@
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
@@ -41,6 +42,11 @@ class _AmplifySignupState extends State<AmplifySignup> {
   }
 }
 
+String name = '';
+String email = '';
+String password = '';
+String confirmPassword = '';
+
 class SignUpWidget extends StatefulWidget {
   const SignUpWidget({
     super.key,
@@ -59,13 +65,36 @@ class _SignUpWidgetState extends State<SignUpWidget> {
       TextEditingController();
   bool _hidepassword = true;
 
-  late String name;
-  late String email;
-  late String password;
-  late String confirmPassword;
+  registration() async {
+    if (_formkey.currentState!.validate()) {
+      name = _nameController.text.trim();
+      email = _emailController.text.trim();
+      password = _passwordController.text.trim();
+      confirmPassword = _confirmPasswordController.text.trim();
 
-  registration() {
-    debugPrint('$name,$email,$password, $confirmPassword');
+      try {
+        final signUpResult = await Amplify.Auth.signUp(
+            username: _nameController.text.trim(),
+            password: _passwordController.text.trim(),
+            options: SignUpOptions(userAttributes: {
+              AuthUserAttributeKey.email: _emailController.text.trim()
+            }));
+
+        if (signUpResult.isSignUpComplete) {
+          debugPrint('Succesfully Created Account');
+        } else {
+          debugPrint('Failed Creating Account');
+        }
+      } on AuthException catch (e) {
+        debugPrint('$e');
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('$e')));
+      }
+    } else{
+
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all fields correctly')));
+    }
   }
 
   @override
@@ -84,10 +113,10 @@ class _SignUpWidgetState extends State<SignUpWidget> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
-          spacing: 17,
+          spacing: 15,
           children: [
             SizedBox(
-              height: 10,
+              height: 5,
             ),
             Text(
               'Get Started',
@@ -99,6 +128,15 @@ class _SignUpWidgetState extends State<SignUpWidget> {
               controller: _passwordController,
               keyboardType: TextInputType.visiblePassword,
               obscureText: _hidepassword,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your password';
+                }
+                if (value.length < 6) {
+                  return 'Password must be at least 6 characters';
+                }
+                return null;
+              },
               decoration: InputDecoration(
                 labelText: 'Password',
                 hintText: 'Enter Password',
@@ -130,6 +168,15 @@ class _SignUpWidgetState extends State<SignUpWidget> {
               controller: _confirmPasswordController,
               keyboardType: TextInputType.visiblePassword,
               obscureText: _hidepassword,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please confirm your password';
+                }
+                if (value != _passwordController.text) {
+                  return 'Passwords do not match';
+                }
+                return null;
+              },
               decoration: InputDecoration(
                 labelText: 'Confirm Password',
                 hintText: 'Confirm Password',
@@ -164,17 +211,7 @@ class _SignUpWidgetState extends State<SignUpWidget> {
                       height: 55,
                       child: FilledButton(
                           onPressed: () {
-                            if (_formkey.currentState!.validate()) {
-                              name = _nameController.text.trim();
-                              email = _emailController.text.trim();
-                              password = _passwordController.text.trim();
-                              confirmPassword = _confirmPasswordController.text.trim();
-                              registration();
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Please fill all fields'))
-                                );
-                            }
+                            registration();
                           },
                           style: ButtonStyle(
                             shape: WidgetStateProperty.all(

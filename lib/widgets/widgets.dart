@@ -1,5 +1,4 @@
-
-  import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 class LoginOption extends StatelessWidget {
   const LoginOption({
@@ -71,11 +70,14 @@ class EmailAddress extends StatelessWidget {
       controller: _emailController,
       keyboardType: TextInputType.emailAddress,
       validator: (value) {
-        if (value == null) {
-          return 'Enter email';
-        } else {
-          return null;
+        if (value == null || value.isEmpty) {
+          return 'Please enter your email';
         }
+        final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+        if (!emailRegex.hasMatch(value)) {
+          return 'Please enter a valid email address';
+        }
+        return null;
       },
       decoration: InputDecoration(
         labelText: 'Email',
@@ -112,11 +114,13 @@ class NameField extends StatelessWidget {
           controller: _nameController,
           keyboardType: TextInputType.name,
           validator: (value) {
-            if (value == null) {
-              return 'Enter your full name';
-            } else {
-              return null;
+            if (value == null || value.isEmpty) {
+              return 'Please enter your full name';
             }
+            if (value.trim().split(' ').length < 2) {
+              return 'Please enter both first and last name';
+            }
+            return null;
           },
           decoration: InputDecoration(
             labelText: 'Full Name',

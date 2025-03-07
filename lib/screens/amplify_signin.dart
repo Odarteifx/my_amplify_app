@@ -59,21 +59,21 @@ class _SignInWidgetState extends State<SignInWidget> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
-          spacing: 30,
+          spacing: 20,
           children: [
-            SizedBox(
-              height: 20,
-            ),
-            Text(
-              'Welcome Back',
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+            const SizedBox(height: 20),
+            Center(
+              child: Text(
+                'Welcome Back',
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+              ),
             ),
             EmailAddress(emailController: _emailController),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
-              spacing: 5,
               children: [
                 password(),
+                const SizedBox(height: 5),
                 GestureDetector(
                     onTap: () {},
                     child: Text(
@@ -88,7 +88,15 @@ class _SignInWidgetState extends State<SignInWidget> {
                   child: SizedBox(
                       height: 55,
                       child: FilledButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            if (_formkey.currentState!.validate()) {
+                              // Form is valid, proceed with sign in
+                              print('Form is valid');
+                              print('Email: ${_emailController.text.trim()}');
+                              print(
+                                  'Password: ${_passwordController.text.trim()}');
+                            }
+                          },
                           style: ButtonStyle(
                             shape: WidgetStateProperty.all(
                               RoundedRectangleBorder(
@@ -127,11 +135,11 @@ class _SignInWidgetState extends State<SignInWidget> {
               children: [
                 Text('Don\'t have an account? '),
                 GestureDetector(
-                  onTap: () => context.goNamed('signUppage'),
+                    onTap: () => context.goNamed('signUppage'),
                     child: Text(
-                  'Sign up',
-                  style: TextStyle(color: Color(0xFF19647E)),
-                ))
+                      'Sign up',
+                      style: TextStyle(color: Color(0xFF19647E)),
+                    ))
               ],
             )
           ],
@@ -145,6 +153,15 @@ class _SignInWidgetState extends State<SignInWidget> {
       controller: _passwordController,
       keyboardType: TextInputType.visiblePassword,
       obscureText: _hidepassword,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter your password';
+        }
+        if (value.length < 6) {
+          return 'Password must be at least 6 characters';
+        }
+        return null;
+      },
       decoration: InputDecoration(
         labelText: 'Password',
         hintText: 'Enter Password',
@@ -158,6 +175,48 @@ class _SignInWidgetState extends State<SignInWidget> {
               _hidepassword ? Iconsax.eye : Iconsax.eye_slash,
               color: Colors.grey,
             )),
+        filled: true,
+        fillColor: Colors.grey[50],
+        hintStyle: TextStyle(fontSize: 15, color: Colors.grey),
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: Colors.blueGrey[100]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+          borderSide: BorderSide(color: Colors.blueGrey[100]!),
+        ),
+      ),
+    );
+  }
+}
+
+class EmailAddress extends StatelessWidget {
+  const EmailAddress({
+    super.key,
+    required TextEditingController emailController,
+  }) : _emailController = emailController;
+
+  final TextEditingController _emailController;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: _emailController,
+      keyboardType: TextInputType.emailAddress,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter your email';
+        }
+        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+          return 'Please enter a valid email';
+        }
+        return null;
+      },
+      decoration: InputDecoration(
+        labelText: 'Email',
+        hintText: 'Enter your email',
         filled: true,
         fillColor: Colors.grey[50],
         hintStyle: TextStyle(fontSize: 15, color: Colors.grey),
